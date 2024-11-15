@@ -24,10 +24,18 @@ export function listener(cube, stick) {
 
         break;
       case "ArrowLeft":
-        stick.rotation.z = Math.sin(5) * (Math.PI / 4); // swing left
+        if (!stick.isSwinging) {
+          stick.isSwinging = true;
+          stick.swingDirection = 1;
+          // swingProgress = 0;
+        }
         break;
       case "ArrowRight":
-        stick.rotation.z = Math.sin(-5) * (Math.PI / 4); // swing right
+        if (!stick.isSwinging) {
+          stick.isSwinging = true;
+          stick.swingDirection = -1;
+          // swingProgress = 0;
+        }
         break;
     }
 
@@ -36,10 +44,6 @@ export function listener(cube, stick) {
 
   window.addEventListener("keyup", (event) => {
     keysPressed[event.code] = false;
-
-    if (event.code === "ArrowLeft" || event.code === "ArrowRight") {
-      stick.rotation.z = 0; // Reset stick rotation
-    }
 
     updateVelocity(); // Update velocity based on remaining active keys
   });

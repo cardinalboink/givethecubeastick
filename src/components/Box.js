@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import { applyGravity } from "../actions/gravity";
-import { collide } from "../actions/collide";
 
 export class Box extends THREE.Mesh {
   constructor({

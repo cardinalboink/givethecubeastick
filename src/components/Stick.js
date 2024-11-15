@@ -2,7 +2,13 @@ import * as THREE from "three";
 
 export class Stick extends THREE.Mesh {
   constructor(
-    { position = { x: 0, y: 0, z: 0 }, rotation = { x: 0, y: 0, z: 0 } },
+    {
+      position = { x: 0, y: 0, z: 0 },
+      rotation = { x: 0, y: 0, z: 0 },
+      isSwinging = false,
+      // swingProgress = 0, // 0 to 1 (percentage of swing completion)
+      swingDirection = 1, // 1 for right, -1 for left },
+    },
     cube
   ) {
     super(
@@ -19,6 +25,10 @@ export class Stick extends THREE.Mesh {
       cube.position.y + offsetY,
       cube.position.z - offsetZ
     );
+
+    this.isSwinging = isSwinging;
+    // this.swingProgress = swingProgress;
+    this.swingDirection = swingDirection;
 
     // Rotate the stick to make it appear as if held out horizontally
     this.rotation.set(rotation.x, rotation.y, rotation.z);

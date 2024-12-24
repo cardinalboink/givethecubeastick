@@ -5,6 +5,7 @@ import { Box } from "../src/components/Box";
 import { listener } from "./actions/eventListeners";
 import { collide } from "./actions/collide";
 import { Stick } from "../src/components/Stick";
+import { melt } from "./actions/melt";
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -104,50 +105,6 @@ if (WebGL.isWebGL2Available()) {
 //key actions
 listener(cube, stickGroup);
 
-// function animate() {
-//   const animationId = requestAnimationFrame(animate);
-//   renderer.render(scene, camera);
-
-//   // Update cube position and attach stick to cube
-//   cube.update(ground);
-//   if (!cube.children.includes(stickGroup)) cube.add(stickGroup);
-
-//   // Enemy spawning
-//   if (frame % spawnRate === 0) {
-//     if (spawnRate > 30) spawnRate -= 20;
-//     const enemy = new Box({
-//       width: 1,
-//       height: 2,
-//       depth: 1,
-//       position: { x: (Math.random() - 0.5) * 10, y: 0, z: -10 },
-//       color: "red",
-//       velocity: { x: 0, y: 0, z: 0.05 },
-//     });
-//     enemy.castShadow = true;
-//     enemy.receiveShadow = true;
-//     scene.add(enemy);
-//     enemies.push(enemy);
-//   }
-
-//   // Update enemies and check for stick collision
-//   enemies.forEach((enemy) => {
-//     enemy.update(ground);
-
-//     // Detect collision with the stick if it's swinging
-//     if (collide(stick, enemy)) {
-//       enemy.velocity.x = swingDirection * 0.1; // Knock enemy away in the swing's direction
-//       enemy.velocity.z += 0.1; // Additional z-axis push
-//     }
-
-//     // Detect collision with the player cube
-//     if (collide({ box1: cube, box2: enemy })) {
-//       cancelAnimationFrame(animationId); // End game or handle collision
-//     }
-//   });
-
-//   frame++;
-// }
-
 function animate() {
   const animationId = requestAnimationFrame(animate);
   renderer.render(scene, camera);
@@ -155,15 +112,14 @@ function animate() {
   // Update cube position and attach stick to cube
   cube.update(ground);
   if (!cube.children.includes(stickGroup)) cube.add(stickGroup);
+  // updateJump()
 
-  // Sword Swing Animation
   if (stickGroup.isSwinging) {
     swingProgress += swingSpeed;
     const angle =
       Math.sin(swingProgress * Math.PI) * maxAngle * stickGroup.swingDirection;
     stickGroup.rotation.z = angle;
 
-    // End the swing and reset
     if (swingProgress >= 1) {
       stickGroup.isSwinging = false;
       swingProgress = 0;
@@ -188,21 +144,33 @@ function animate() {
     enemies.push(enemy);
   }
 
-  // Update enemies and check for stick collision
-  enemies.forEach((enemy) => {
+  for (let i = 0; i < enemies.length; i++) {
+    const enemy = enemies[i];
+
+    if (enemy.isMelted) continue;
+
     enemy.update(ground);
 
-    // Detect collision with the stick if it's swinging
-    if (stick.isSwinging && collide(stick, enemy)) {
-      enemy.velocity.x = stickGroup.swingDirection * 0.1; // Knock enemy away in the swing's direction
-      enemy.velocity.z += 0.1; // Additional z-axis push
+    const distance = cube.position.distanceTo(enemy.position);
+    const threshold = 1.5;
+    if (distance < threshold) {
+      console.log("Cube Collision detected");
+      handleGameOver();
+      break;
     }
 
-    // Detect collision with the player cube
-    if (collide({ box1: cube, box2: enemy })) {
-      cancelAnimationFrame(animationId); // End game or handle collision
+    if (collide({ box1: stick, box2: enemy })) {
+      console.log("Stick Collision detected");
+      enemy.isMelted = true;
+      melt(scene, enemy, enemies);
+      return;
     }
-  });
+  }
 
+  function handleGameOver() {
+    cancelAnimationFrame(animationId);
+    alert("Game Over! Click OK to restart.");
+    window.location.reload();
+  }
   frame++;
 }
